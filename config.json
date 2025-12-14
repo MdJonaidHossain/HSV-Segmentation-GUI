@@ -1,0 +1,30 @@
+{
+  "window": {
+    "title": "HSV Segmentation Tool",
+    "geometry": "1400x900",
+    "theme": "darkly"
+  },
+  "hsv_defaults": {
+    "h_min": 0,
+    "h_max": 179,
+    "s_min": 0,
+    "s_max": 255,
+    "v_min": 0,
+    "v_max": 255
+  },
+  "image": {
+    "preview_width": 640,
+    "preview_height": 480,
+    "supported_formats": [".jpg", ".jpeg", ".png", ".bmp", ".tiff"]
+  },
+  "performance": {
+    "use_gpu": false,
+    "resize_large_images": true,
+    "max_dimension": 1920
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "hsv_segmentation.log",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  }
+}
