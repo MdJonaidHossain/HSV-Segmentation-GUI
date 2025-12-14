@@ -137,3 +137,5 @@ user_presets.json
 !sample_images/*.png
 !sample_images/*.jpg
 !sample_images/*.jpeg
+demo_output/
+hsv_segmentation.log

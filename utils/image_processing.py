@@ -4,7 +4,7 @@ Utility functions for HSV segmentation and image processing.
 import cv2
 import numpy as np
 import logging
-from typing import Tuple, Optional, Dict
+from typing import Tuple, Optional, Dict, Any
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ def threshold(image: np.ndarray, lower: np.ndarray, upper: np.ndarray) -> np.nda
         return np.zeros(image.shape[:2], dtype=np.uint8) if image is not None else np.zeros((100, 100), dtype=np.uint8)
 
 
-def calculate_metrics(mask: np.ndarray, image: np.ndarray) -> Dict[str, any]:
+def calculate_metrics(mask: np.ndarray, image: np.ndarray) -> Dict[str, Any]:
     """
     Calculate segmentation metrics from mask.
     

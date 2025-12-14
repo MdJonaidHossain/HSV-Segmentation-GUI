@@ -93,19 +93,21 @@ class TorchImageProcessor:
             if image is None or image.size == 0:
                 return np.zeros((100, 100), dtype=np.uint8)
             
-            # Convert to HSV
-            hsv_tensor = self.bgr_to_hsv_torch(image)
+            # Convert to HSV (use OpenCV for accurate color conversion)
+            hsv_np = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+            hsv_tensor = self.to_tensor(hsv_np)
             
             # Convert thresholds to tensors
             lower_t = torch.tensor(lower, device=self.device, dtype=torch.uint8)
             upper_t = torch.tensor(upper, device=self.device, dtype=torch.uint8)
             
-            # Apply thresholding
-            mask = torch.ones(hsv_tensor.shape[:2], device=self.device, dtype=torch.uint8) * 255
+            # Vectorized thresholding - all channels at once
+            in_range = torch.ones(hsv_tensor.shape[:2], device=self.device, dtype=torch.bool)
             
             for i in range(3):
-                channel_mask = (hsv_tensor[:, :, i] >= lower_t[i]) & (hsv_tensor[:, :, i] <= upper_t[i])
-                mask = mask & (channel_mask.to(torch.uint8) * 255)
+                in_range = in_range & (hsv_tensor[:, :, i] >= lower_t[i]) & (hsv_tensor[:, :, i] <= upper_t[i])
+            
+            mask = (in_range.to(torch.uint8) * 255)
             
             return self.to_numpy(mask)
         except Exception as e:
@@ -164,14 +166,36 @@ class TorchImageProcessor:
             List of binary masks
         """
         try:
+            if not images:
+                return []
+            
+            # For actual batch processing, images need same dimensions
+            # Here we process individually but could be extended for true batching
             masks = []
+            
+            # Convert all images to HSV tensors
+            hsv_tensors = []
             for img in images:
-                mask = self.threshold_torch(img, lower, upper)
-                masks.append(mask)
+                hsv_np = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+                hsv_tensors.append(self.to_tensor(hsv_np))
+            
+            # Process all on GPU
+            lower_t = torch.tensor(lower, device=self.device, dtype=torch.uint8)
+            upper_t = torch.tensor(upper, device=self.device, dtype=torch.uint8)
+            
+            for hsv_tensor in hsv_tensors:
+                in_range = torch.ones(hsv_tensor.shape[:2], device=self.device, dtype=torch.bool)
+                for i in range(3):
+                    in_range = in_range & (hsv_tensor[:, :, i] >= lower_t[i]) & (hsv_tensor[:, :, i] <= upper_t[i])
+                
+                mask = (in_range.to(torch.uint8) * 255)
+                masks.append(self.to_numpy(mask))
+            
             return masks
         except Exception as e:
             logger.error(f"Error in batch processing: {e}")
-            return [np.zeros((100, 100), dtype=np.uint8) for _ in images]
+            # Fallback to sequential OpenCV processing
+            return [cv2.inRange(cv2.cvtColor(img, cv2.COLOR_BGR2HSV), lower, upper) for img in images]
 
 
 def get_processor(use_gpu: bool = None) -> TorchImageProcessor:

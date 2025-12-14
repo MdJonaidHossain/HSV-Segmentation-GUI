@@ -98,8 +98,14 @@ class TestImageProcessing(unittest.TestCase):
         self.assertIn('percentage', metrics)
         self.assertIn('total_pixels', metrics)
         
-        self.assertEqual(metrics['pixel_count'], 2500)  # 50*50
-        self.assertEqual(metrics['total_pixels'], 10000)  # 100*100
+        # Calculate expected values from dimensions
+        square_size = 50
+        total_size = 100
+        expected_white_pixels = square_size * square_size  # 2500
+        expected_total_pixels = total_size * total_size     # 10000
+        
+        self.assertEqual(metrics['pixel_count'], expected_white_pixels)
+        self.assertEqual(metrics['total_pixels'], expected_total_pixels)
         self.assertAlmostEqual(metrics['percentage'], 25.0, delta=0.1)
     
     def test_calculate_metrics_empty(self):
@@ -117,7 +123,8 @@ class TestImageProcessing(unittest.TestCase):
         
         metrics = calculate_metrics(mask, self.test_image)
         
-        self.assertEqual(metrics['pixel_count'], 10000)
+        expected_total = 100 * 100
+        self.assertEqual(metrics['pixel_count'], expected_total)
         self.assertAlmostEqual(metrics['percentage'], 100.0, delta=0.1)
     
     def test_calculate_metrics_all_black(self):

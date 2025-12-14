@@ -2,7 +2,7 @@
 Main GUI application for HSV Segmentation Tool.
 """
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, simpledialog
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from ttkbootstrap.tooltip import ToolTip
@@ -28,6 +28,9 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+
+# Constants
+CANVAS_SCALE_FACTOR = 0.95  # Scale factor for fitting images in canvas
 
 
 class HSVVisualizerFrame(ttk.Frame):
@@ -368,7 +371,7 @@ class HSVSegmentationGUI:
     def save_preset(self):
         """Save current settings as a preset."""
         try:
-            name = tk.simpledialog.askstring("Save Preset", "Enter preset name:")
+            name = simpledialog.askstring("Save Preset", "Enter preset name:")
             if name:
                 preset_values = {
                     'h_min': self.h_min.get(),
@@ -470,8 +473,8 @@ class HSVSegmentationGUI:
             if canvas_width > 1 and canvas_height > 1:
                 h, w = rgb.shape[:2]
                 scale = min(canvas_width / w, canvas_height / h)
-                new_w = int(w * scale * 0.95)
-                new_h = int(h * scale * 0.95)
+                new_w = int(w * scale * CANVAS_SCALE_FACTOR)
+                new_h = int(h * scale * CANVAS_SCALE_FACTOR)
                 
                 rgb = cv2.resize(rgb, (new_w, new_h), interpolation=cv2.INTER_AREA)
             
